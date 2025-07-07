@@ -2,43 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sports Day Results</title>
     <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    <header>
-        <h1>Sports Day Results</h1>
-    </header>
-    <nav>
-        <a href="add_event.html">Add New Event</a>
-        <a href="{{ url_for('generate_pdf') }}">Download PDF</a>
-    </nav>
+    <h1>Sports Day Results</h1>
+    <a href="add_event.html">Add New Result</a>
     
-    {% for event in event_results %}
-    <div class="event">
-        <h2>{{ event.event_name }} ({{ event.event_date }})</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Athlete</th>
-                    <th>House/Team</th>
-                    <th>Position</th>
-                    <th>Time/Score</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for result in event.results %}
-                <tr>
-                    <td>{{ result[0] }}</td>
-                    <td>{{ result[1] }}</td>
-                    <td>{{ result[2] }}</td>
-                    <td>{{ result[3] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endfor %}
+    <table>
+        <thead>
+            <tr>
+                <th>Result ID</th>
+                <th>Athlete ID</th>
+                <th>Event Name</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ result[0] }}</td>
+                <td>{{ result[1] }}</td>
+                <td>{{ result[2] }}</td>
+                <td>{{ result[3] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>
