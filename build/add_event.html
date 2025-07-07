@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Event</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Add New Event & Results</h1>
+    </header>
+    <nav>
+        <a href="{{ url_for('index') }}">Back to Results</a>
+    </nav>
+    
+    <form method="POST" action="/add_event">
+        <label for="event_name">Event Name:</label>
+        <input type="text" id="event_name" name="event_name" required>
+        
+        <h3>Athlete Details</h3>
+        <label for="athlete_id">Athlete Student ID:</label>
+        <input type="text" id="athlete_id" name="athlete_id" required>
+        
+        <label for="time_result">Time/Score:</label>
+        <input type="text" id="time_result" name="time_result" required>
+        
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
