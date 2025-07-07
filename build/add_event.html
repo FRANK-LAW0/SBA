@@ -6,14 +6,13 @@
     <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    
     <h1>Add New Results</h1>
     
     <nav>
         <a href="index.html">Back to Main</a>
     </nav>
     
-    <form method="POST" action="/submit_result">
+    <form method="POST" action="{{ url_for('add_result') }}">
         <label for="athlete_id">Athlete Student ID:</label>
         <input type="text" id="athlete_id" name="athlete_id" required><br>
 
