@@ -9,11 +9,10 @@ def init_db():
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS result (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            athlete_name TEXT NOT NULL,
+            result_id integer primary key AUTOINCREMENT,
+            athlete_id TEXT NOT NULL,
             event_name TEXT NOT NULL,
-            position INTEGER NOT NULL,
-            time_result TEXT NOT NULL
+            result double NOT NULL
         )
     ''')
     conn.commit()
@@ -31,10 +30,9 @@ def show_form():
 def submit_result():
     if request.method == 'POST':
         # Step 1: Get form data
-        athlete_name = request.form['athlete_name']
+        athlete_id = request.form['athlete_id']
         event_name = request.form['event_name']
-        position = request.form['position']
-        time_result = request.form['time_result']
+        result = request.form['result']
 
         # Step 2: Connect to the database
         conn = sqlite3.connect('sports_day.db')
@@ -42,9 +40,9 @@ def submit_result():
 
         # Step 3: Insert data into the 'result' table
         cursor.execute('''
-            INSERT INTO result (athlete_name, event_name, position, time_result)
-            VALUES (?, ?, ?, ?)
-        ''', (athlete_name, event_name, position, time_result))
+            INSERT INTO result (athlete_id, event_name, result)
+            VALUES (?, ?, ?)
+        ''', (athlete_id, event_name, result))
 
         # Step 4: Commit and close
         conn.commit()
@@ -64,3 +62,5 @@ def view_results():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    print("RESULTS:")
+    print(view_results)
