@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 import os
 
-app = Flask(__name__, template_folder='build')
+app = Flask(__name__, template_folder='build', static_folder='build/static')
 
 
 # Initialize the database
