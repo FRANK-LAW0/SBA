@@ -2,30 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Event</title>
+    <title>Add Event Result</title>
     <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    <header>
-        <h1>Add New Event & Results</h1>
-    </header>
+    <h1>Add New Results</h1>
+    
     <nav>
-        <a href="{{ url_for('index') }}">Back to Results</a>
+        <a href="{{ url_for('index') }}">Back to Main</a>
     </nav>
     
-    <form method="POST" action="/add_event">
+    <form method="POST" action="/submit_result">
+        <label for="athlete_name">Athlete Student ID:</label>
+        <input type="text" id="athlete_id" name="athlete_id" required><br>
+
         <label for="event_name">Event Name:</label>
-        <input type="text" id="event_name" name="event_name" required>
-        
-        <h3>Athlete Details</h3>
-        <label for="athlete_id">Athlete Student ID:</label>
-        <input type="text" id="athlete_id" name="athlete_id" required>
-        
+        <input type="text" id="event_name" name="event_name" required><br>
+
         <label for="time_result">Time/Score:</label>
-        <input type="text" id="time_result" name="time_result" required>
-        
-        <button type="submit">Submit</button>
+        <input type="text" id="time_result" name="time_result" required><br>
+
+        <button type="submit">Submit Result</button>
     </form>
 </body>
 </html>
