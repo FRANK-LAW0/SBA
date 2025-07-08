@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Athletes List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Athletes List</h1>
+    <a href="{{ url_for('index') }}">Back to Results</a>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>House</th>
+                <th>Sex</th>
+                <th>Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for athlete in athletes %}
+            <tr>
+                <td>{{ athlete[0] }}</td>
+                <td>{{ athlete[1] }}</td>
+                <td>{{ athlete[2] }}</td>
+                <td>{{ athlete[3] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
