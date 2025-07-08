@@ -17,7 +17,8 @@ def init_db():
             event_id TEXT NOT NULL,
             result REAL NOT NULL,
             foreign key (athlete_id) references Athletes(athlete_id),
-            foreign key (event_id) references Events(event_id)
+            foreign key (event_id) references Events(event_id),
+            unique(athlete_id, event_id)
         )
     ''')
 
@@ -74,6 +75,21 @@ def add_result():
         return redirect(url_for('index'))
     
     return render_template('add_event.html')
+
+# Route for managing Athletes and Events
+@app.route('/athletes')
+def list_athletes():
+    conn = ssqlite3.connect('sports_day.db')
+    athletes = conn.execute("SELECT * FROM Athletes").fetchall()
+    conn.close()
+    return render_template('list_athletes.html', athletes=athletes)
+
+@app.route('/events')
+def list_events():
+    conn = ssqlite3.connect('sports_day.db')
+    events = conn.execute("SELECT * FROM Events").fetchall()
+    conn.close()
+    return render_template('list_events.html', events=events)
 
 if __name__ == '__main__':
     app.run(debug=True)
