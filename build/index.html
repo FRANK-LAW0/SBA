@@ -7,8 +7,11 @@
 </head>
 <body>
     <h1>Sports Day Results</h1>
-    <a href="add_event.html">Add New Result</a>
-    
+	<a href="{{ url_for('add_result') }}">Add New Result</a>
+    <h1>Athletes</h1>
+	<a href="{{ url_for('list_athletes') }}">Athletes</a>
+	<h1>Events</h1>
+	<a href="{{ url_for('list_events') }}">Events</a>
     <table>
         <thead>
             <tr>
