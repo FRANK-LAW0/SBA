@@ -1,33 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Athletes List</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Athletes List</h1>
-    <a href="{{ url_for('index') }}">Back to Results</a>
-    
+<html><head>
+  <meta charset="UTF-8">
+  <title>Athletes</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head><body>
+  {% include 'base_nav.html' %}
+  <main>
+    <h1>Athletes</h1>
+    <div class="filters">
+      <form method="get">
+        <select name="house">
+          <option value="">All Houses</option>
+          {% for h in houses %}
+            <option value="{{h['house']}}"
+              {% if current_filters.house==h['house'] %}selected{% endif %}>
+              {{h['house']}}
+            </option>
+          {% endfor %}
+        </select>
+        <select name="sex">
+          <option value="">All Sexes</option>
+          {% for s in sexes %}
+            <option value="{{s}}"
+              {% if current_filters.sex==s %}selected{% endif %}>
+              {{s}}
+            </option>
+          {% endfor %}
+        </select>
+        <select name="grade">
+          <option value="">All Grades</option>
+          {% for g in grades %}
+            <option value="{{g['grade']}}"
+              {% if current_filters.grade==g['grade'] %}selected{% endif %}>
+              {{g['grade']}}
+            </option>
+          {% endfor %}
+        </select>
+        <button type="submit">Filter</button>
+        <a href="{{ url_for('list_athletes') }}">Reset</a>
+      </form>
+    </div>
     <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>House</th>
-                <th>Sex</th>
-                <th>Grade</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for athlete in athletes %}
-            <tr>
-                <td>{{ athlete[0] }}</td>
-                <td>{{ athlete[1] }}</td>
-                <td>{{ athlete[2] }}</td>
-                <td>{{ athlete[3] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>House</th><th>Sex</th><th>Grade</th></tr>
+      </thead>
+      <tbody>
+        {% for a in athletes %}
+        <tr>
+          <td>{{a['athlete_id']}}</td>
+          <td>{{a['name']}}</td>
+          <td>{{a['house']}}</td>
+          <td>{{a['sex']}}</td>
+          <td>{{a['grade']}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
-</body>
-</html>
+  </main>
+</body></html>
