@@ -1,9 +1,39 @@
+/* Filters */
+.filters {
+    margin: 20px 0; /* Keeps vertical margin */
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 5px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%; /* Make sure it spans the full width of its parent */
+    box-sizing: border-box; /* Include padding in the width */
+}
+
+.filters select, .filters button {
+    padding: 8px;
+    margin-right: 10px;
+}
+
+.filters a {
+    margin-left: 10px;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+
+
 /* General Styles */
 body {
     font-family: 'Arial', sans-serif;
     line-height: 1.6;
     margin: 0;
-    padding: 20px;
+    padding: 20px; 
     background-color: #f4f4f9;
     color: #333;
 }
