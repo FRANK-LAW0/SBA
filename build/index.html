@@ -1,36 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Sports Day Results</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Sports Day Results</h1>
-	<a href="{{ url_for('add_result') }}">Add New Result</a>
-    <h1>Athletes</h1>
-	<a href="{{ url_for('list_athletes') }}">Athletes</a>
-	<h1>Events</h1>
-	<a href="{{ url_for('list_events') }}">Events</a>
-    <table>
-        <thead>
-            <tr>
-                <th>Result ID</th>
-                <th>Athlete ID</th>
-                <th>Event Name</th>
-                <th>Result</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for result in results %}
-            <tr>
-                <td>{{ result[0] }}</td>
-                <td>{{ result[1] }}</td>
-                <td>{{ result[2] }}</td>
-                <td>{{ result[3] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
-</html>
+<html><head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head><body>
+  {% include 'base_nav.html' %}
+  <main>
+    <h1>Welcome, {{ session.username }}!</h1>
+    <p>Use the navigation bar to proceed.</p>
+  </main>
+</body></html>
