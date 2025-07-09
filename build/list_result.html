@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="UTF-8">
+  <title>Results</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head><body>
+  {% include 'base_nav.html' %}
+  <main>
+    <h1>Competition Results</h1>
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% if msgs %}
+        <ul class="flash">
+        {% for cat,msg in msgs %}
+          <li class="{{cat}}">{{msg}}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <div class="filters">
+      <form method="get">
+        <select name="event">
+          <option value="">All Events</option>
+          {% for e in events %}
+            <option value="{{e['event_id']}}"
+              {% if current_filters.event==e['event_id'] %}selected{% endif %}>
+              {{e['event']}} ({{e['sex']}} {{e['grade']}})
+            </option>
+          {% endfor %}
+        </select>
+        <input type="text" name="athlete"
+          placeholder="Athlete ID"
+          value="{{ current_filters.athlete }}">
+        <select name="grade">
+          <option value="">All Grades</option>
+          {% for g in grades %}
+            <option value="{{g['grade']}}"
+              {% if current_filters.grade==g['grade'] %}selected{% endif %}>
+              {{g['grade']}}
+            </option>
+          {% endfor %}
+        </select>
+        <button type="submit">Filter</button>
+        <a href="{{ url_for('list_results') }}">Reset</a>
+      </form>
+    </div>
+
+    {% if grouped_results %}
+      {% for ev,rows in grouped_results.items() %}
+        <section class="event-results">
+          <h2>{{ev[1]}} ({{ev[2]}})</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Pos</th><th>Athlete</th><th>Name</th>
+                <th>House</th><th>Grade</th><th>Result</th>
+                {% if session.role=='admin' %}<th>Actions</th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in rows %}
+              <tr>
+                <td>{{loop.index}}</td>
+                <td>{{r['athlete_id']}}</td>
+                <td>{{r['name']}}</td>
+                <td>{{r['house']}}</td>
+                <td>{{r['athlete_grade']}}</td>
+                <td>
+                  {% if 'meters' in ev[1].lower() or 'run' in ev[1].lower() %}
+                    {{'%.2f'|format(r['result'])}} sec
+                  {% else %}
+                    {{'%.2f'|format(r['result'])}} m
+                  {% endif %}
+                </td>
+                {% if session.role=='admin' %}
+                <td>
+                  <a href="{{ url_for('edit_result',rid=r['result_id']) }}">Edit</a> |
+                  <a href="{{ url_for('delete_result',rid=r['result_id']) }}"
+                     onclick="return confirm('Delete?')">Delete</a>
+                </td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </section>
+      {% endfor %}
+    {% else %}
+      <p>No results match your filters.</p>
+    {% endif %}
+  </main>
+</body></html>
