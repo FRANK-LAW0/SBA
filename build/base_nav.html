@@ -1,0 +1,14 @@
+<header>
+  <nav>
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('list_results') }}">Results</a>
+    {% if session.role=='admin' %}
+      <a href="{{ url_for('add_result') }}">Add Result</a>
+      <a href="{{ url_for('list_athletes') }}">Athletes</a>
+      <a href="{{ url_for('list_events') }}">Events</a>
+    {% endif %}
+    {% if session.username %}
+      <a href="{{ url_for('logout') }}" style="float:right">Logout ({{ session.username }})</a>
+    {% endif %}
+  </nav>
+</header>
