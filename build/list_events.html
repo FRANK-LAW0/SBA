@@ -1,33 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Events List</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Events List</h1>
-    <a href="{{ url_for('index') }}">Back to Results</a>
-    
+<html><head>
+  <meta charset="UTF-8">
+  <title>Events</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head><body>
+  {% include 'base_nav.html' %}
+  <main>
+    <h1>Events</h1>
+    <div class="filters">
+      <form method="get">
+        <select name="sex">
+          <option value="">All Sexes</option>
+          {% for s in sexes %}
+            <option value="{{s}}"
+              {% if current_filters.sex==s %}selected{% endif %}>
+              {{s}}
+            </option>
+          {% endfor %}
+        </select>
+        <select name="grade">
+          <option value="">All Grades</option>
+          {% for g in grades %}
+            <option value="{{g}}"
+              {% if current_filters.grade==g %}selected{% endif %}>
+              {{g}}
+            </option>
+          {% endfor %}
+        </select>
+        <button type="submit">Filter</button>
+        <a href="{{ url_for('list_events') }}">Reset</a>
+      </form>
+    </div>
     <table>
-        <thead>
-            <tr>
-                <th>Event ID</th>
-                <th>Event Name</th>
-                <th>Sex</th>
-                <th>Grade</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for event in events %}
-            <tr>
-                <td>{{ event[0] }}</td>
-                <td>{{ event[1] }}</td>
-                <td>{{ event[2] }}</td>
-                <td>{{ event[3] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+      <thead>
+        <tr><th>ID</th><th>Event</th><th>Sex</th><th>Grade</th></tr>
+      </thead>
+      <tbody>
+        {% for e in events %}
+        <tr>
+          <td>{{e['event_id']}}</td>
+          <td>{{e['event']}}</td>
+          <td>{{e['sex']}}</td>
+          <td>{{e['grade']}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
-</body>
-</html>
+  </main>
+</body></html>
