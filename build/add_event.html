@@ -1,28 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add Event Result</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Add New Results</h1>
-    
-    <nav>
-        <a href="{{ url_for('index') }}">Back to Main</a>
-    </nav>
-    
-    <form method="POST" action="{{ url_for('add_result') }}">
-        <label for="athlete_id">Athlete Student ID:</label>
-        <input type="text" id="athlete_id" name="athlete_id" required><br>
-
-        <label for="event_id">Event ID:</label>
-        <input type="text" id="event_id" name="event_id" required><br>
-
-        <label for="result">Result:</label>
-        <input type="text" id="result" name="result" required><br>
-
-        <button type="submit">Submmit Result</button>
+<html><head>
+  <meta charset="UTF-8">
+  <title>Add Result</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head><body>
+  {% include 'base_nav.html' %}
+  <main>
+    <h1>Add New Result</h1>
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% if msgs %}
+        <ul class="flash">
+        {% for cat,msg in msgs %}
+          <li class="{{cat}}">{{msg}}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    <form method="post">
+      <label>Athlete ID:</label>
+      <input type="text" name="athlete_id" required placeholder="e.g. ATH001">
+      <label>Event ID:</label>
+      <input type="text" name="event_id" required placeholder="e.g. EV0001">
+      <label>Result:</label>
+      <input type="text" name="result" required placeholder="e.g. 12.34">
+      <button type="submit">Submit</button>
     </form>
-</body>
-</html>
+  </main>
+</body></html>
