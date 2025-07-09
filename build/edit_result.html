@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="UTF-8">
+  <title>Edit Result</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head><body>
+  {% include 'base_nav.html' %}
+  <main>
+    <h1>Edit Result #{{ row['result_id'] }}</h1>
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% if msgs %}
+        <ul class="flash">
+        {% for cat,msg in msgs %}
+          <li class="{{cat}}">{{msg}}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    <form method="post">
+      <label>Athlete ID:</label>
+      <input type="text" name="athlete_id" value="{{ row['athlete_id'] }}" required>
+      <label>Event ID:</label>
+      <input type="text" name="event_id" value="{{ row['event_id'] }}" required>
+      <label>Result:</label>
+      <input type="text" name="result" value="{{ row['result'] }}" required>
+      <button type="submit">Update</button>
+    </form>
+  </main>
+</body></html>
