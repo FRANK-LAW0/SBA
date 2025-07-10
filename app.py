@@ -17,9 +17,9 @@ def get_db():
 
 def init_db():
     conn = get_db()
-    c = conn.cursor()
+    cursor = conn.cursor()
     # drop & recreate
-    c.executescript("""
+    cursor.executescript("""
     DROP TABLE IF EXISTS results;
     DROP TABLE IF EXISTS Events;
     DROP TABLE IF EXISTS Athletes;
@@ -50,7 +50,7 @@ def init_db():
     """)
     
     sample_athletes, sample_events, sample_results = sample(75)
-    print(sample_results)
+    #print(sample_results)
     cursor.executemany("INSERT INTO Events VALUES (?,?,?,?)", sample_events)
     cursor.executemany("INSERT INTO Athletes VALUES (?,?,?,?,?)", sample_athletes)
     cursor.executemany("INSERT INTO results (athlete_id,event_id,result) VALUES (?,?,?)", sample_results)
