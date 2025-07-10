@@ -121,7 +121,8 @@ def add_result():
               "INSERT INTO results(athlete_id,event_id,result) VALUES (?,?,?)",
               (ath,ev,res)
             )
-            db.commit(); db.close()
+            db.commit()
+            db.close()
             flash("Result added", "success")
             return redirect(url_for('list_results'))
         except ValueError:
@@ -148,11 +149,14 @@ def list_results():
     """
     params = []
     if eflt:
-        sql += " AND e.event_id=?";   params.append(eflt)
+        sql += " AND e.event_id=?";   
+        params.append(eflt)
     if afl:
-        sql += " AND a.athlete_id=?"; params.append(afl)
+        sql += " AND a.athlete_id=?"; 
+        params.append(afl)
     if gflt:
-        sql += " AND a.grade=?";      params.append(gflt)
+        sql += " AND a.grade=?";      
+        params.append(gflt)
     sql += """
       ORDER BY e.event,
         CASE 
@@ -198,7 +202,8 @@ def edit_result(rid):
               "UPDATE results SET athlete_id=?,event_id=?,result=? WHERE result_id=?",
               (ath,ev,res,rid)
             )
-            db.commit(); db.close()
+            db.commit()
+            db.close()
             flash("Updated","success")
             return redirect(url_for('list_results'))
         except ValueError:
@@ -226,10 +231,17 @@ def list_athletes():
     grade = request.args.get('grade','')
     q = "SELECT * FROM Athletes"
     wf=[]; ps=[]
-    if house: wf.append("house=?"); ps.append(house)
-    if sex:   wf.append("sex=?");   ps.append(sex)
-    if grade: wf.append("grade=?"); ps.append(grade)
-    if wf:    q += " WHERE " + " AND ".join(wf)
+    if house: 
+        wf.append("house=?")
+        ps.append(house)
+    if sex:   
+        wf.append("sex=?")
+        ps.append(sex)
+    if grade: 
+        wf.append("grade=?")
+        ps.append(grade)
+    if wf:    
+        q += " WHERE " + " AND ".join(wf)
     db = get_db()
     ath = db.execute(q,ps).fetchall()
     houses= db.execute("SELECT DISTINCT house FROM Athletes").fetchall()
@@ -247,9 +259,14 @@ def list_events():
     sex   = request.args.get('sex','')
     grade = request.args.get('grade','')
     q="SELECT * FROM Events"; wf=[]; ps=[]
-    if sex:   wf.append("sex=?");   ps.append(sex)
-    if grade: wf.append("grade=?"); ps.append(grade)
-    if wf:    q+=" WHERE "+ " AND ".join(wf)
+    if sex:   
+        wf.append("sex=?")
+        ps.append(sex)
+    if grade: 
+        wf.append("grade=?")
+        ps.append(grade)
+    if wf:    
+        q+=" WHERE "+ " AND ".join(wf)
     db = get_db()
     ev = db.execute(q,ps).fetchall()
     db.close()
