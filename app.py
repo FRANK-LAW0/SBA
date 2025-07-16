@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import sqlite3, os, functools
-from fake_info import sample
+#from fake_info import *
+import fake_info
 
 app = Flask(__name__, template_folder='build', static_folder='build/static')
 app.secret_key = 'TH12 1s tHe sEcr37'
@@ -45,12 +46,14 @@ def init_db():
       result_id   INTEGER PRIMARY KEY AUTOINCREMENT,
       athlete_id  TEXT NOT NULL,
       event_id    TEXT NOT NULL,
-      result      REAL NOT NULL
+      result      REAL NOT NULL,
+      foreign key (athlete_id) references Athletes(athlete_id),
+      foreign key (event_id) references Events(event_id)
     );
     """)
     
-    sample_athletes, sample_events, sample_results = sample(75)
-    #print(sample_results)
+    sample_athletes, sample_events, sample_results = fake_info.sample_athlete(10), fake_info.sample_event(), []
+    
     cursor.executemany("INSERT INTO Events VALUES (?,?,?,?)", sample_events)
     cursor.executemany("INSERT INTO Athletes VALUES (?,?,?,?,?)", sample_athletes)
     cursor.executemany("INSERT INTO results (athlete_id,event_id,result) VALUES (?,?,?)", sample_results)
