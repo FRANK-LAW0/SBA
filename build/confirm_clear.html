@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Clear Results</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  {% include 'base_nav.html' %}
+
+  <main class="container">
+    <h1>Clear All Results</h1>
+    
+    <div class="alert-box warning">
+      <strong>Warning!</strong> This action will permanently delete all competition results and cannot be undone.
+    </div>
+    
+    <form method="POST" class="confirmation-form">
+      <div class="form-actions">
+        <button type="submit" class="btn danger">Confirm Clear All Results</button>
+        <a href="{{ url_for('list_results') }}" class="btn secondary">Cancel</a>
+      </div>
+    </form>
+  </main>
+
+  
+</body>
+</html>
