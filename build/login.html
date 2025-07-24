@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html><head>
+<html lang="en">
+<head>
   <meta charset="UTF-8">
   <title>Login</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head><body>
-  {% include 'base_nav.html' %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}"
+  >
+</head>
+<body>
   <main>
     <h1>Login</h1>
     {% with msgs = get_flashed_messages(with_categories=true) %}
       {% if msgs %}
         <ul class="flash">
-        {% for cat,msg in msgs %}
-          <li class="{{cat}}">{{msg}}</li>
-        {% endfor %}
+          {% for cat, msg in msgs %}
+            <li class="{{ cat }}">{{ msg }}</li>
+          {% endfor %}
         </ul>
       {% endif %}
     {% endwith %}
@@ -24,4 +29,5 @@
       <button type="submit">Login</button>
     </form>
   </main>
-</body></html>
+</body>
+</html>
