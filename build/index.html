@@ -1,12 +1,21 @@
 <!DOCTYPE html>
-<html><head>
+<html lang="en">
+<head>
   <meta charset="UTF-8">
   <title>Dashboard</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head><body>
+  <!-- viewport belongs in the <head> of every page -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}"
+  >
+</head>
+<body>
   {% include 'base_nav.html' %}
+
   <main>
     <h1>Welcome, {{ session.username }}!</h1>
     <p>Use the navigation bar to proceed.</p>
   </main>
-</body></html>
+</body>
+</html>
