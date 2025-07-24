@@ -1,14 +1,23 @@
 <header>
-  <nav>
-    <a href="{{ url_for('index') }}">Home</a>
-    <a href="{{ url_for('list_results') }}">Results</a>
-    {% if session.role=='admin' %}
-      <a href="{{ url_for('add_result') }}">Add Result</a>
-      <a href="{{ url_for('list_athletes') }}">Athletes</a>
-      <a href="{{ url_for('list_events') }}">Events</a>
-    {% endif %}
-    {% if session.username %}
-      <a href="{{ url_for('logout') }}" style="float:right">Logout ({{ session.username }})</a>
-    {% endif %}
+  <nav class="nav-bar">
+    <a href="{{ url_for('index') }}" class="logo">
+      <i class="fas fa-trophy"></i> SportsDay
+    </a>
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-expanded="false">
+      <span class="hamburger">☰</span>
+      <span class="close-icon hidden">×</span>
+    </button>
+    <ul class="nav-menu" id="nav-menu">
+      <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a></li>
+      <li><a href="{{ url_for('list_results') }}"><i class="fas fa-list"></i> Results</a></li>
+      {% if session.role=='admin' %}
+        <li><a href="{{ url_for('add_result') }}"><i class="fas fa-plus"></i> Add Result</a></li>
+        <li><a href="{{ url_for('list_athletes') }}"><i class="fas fa-users"></i> Athletes</a></li>
+        <li><a href="{{ url_for('list_events') }}"><i class="fas fa-calendar"></i> Events</a></li>
+        <li><a href="{{ url_for('clear_results') }}"><i class="fas fa-trash"></i> Clear Results</a></li>
+      {% endif %}
+      <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
   </nav>
 </header>
+<script src="{{ url_for('static', filename='nav.js') }}"></script>
