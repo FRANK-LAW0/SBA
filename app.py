@@ -4,6 +4,7 @@ from flask import (
 )
 import sqlite3, os, functools
 import fake_info
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__,
             template_folder='build',
@@ -11,10 +12,7 @@ app = Flask(__name__,
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY','dev')
 app.config['DATABASE']   = os.path.join(app.root_path, 'sports_day.db')
 
-USERS = {
-    'admin': {'password':'adminpass','role':'admin'},
-    'user':  {'password':'userpass', 'role':'user'}
-}
+
 
 # ——— Database helpers ———
 def get_db():
@@ -35,6 +33,13 @@ def init_db():
       DROP TABLE IF EXISTS results;
       DROP TABLE IF EXISTS Events;
       DROP TABLE IF EXISTS Athletes;
+      DROP TABLE IF EXISTS Users;
+      CREATE TABLE Users (
+        username TEXT PRIMARY KEY,
+        password TEXT NOT NULL,
+        role     TEXT NOT NULL CHECK(role IN('admin','user'))
+      );
+
       CREATE TABLE Events (
         event_id TEXT PRIMARY KEY,
         event    TEXT NOT NULL,
@@ -56,7 +61,13 @@ def init_db():
       );
     """)
     # now real sample data
-    ath, ev, res = fake_info.sample(50)
+    users = [
+        ('admin', generate_password_hash('adminpass'), 'admin'),
+        ('user',  generate_password_hash('userpass'),  'user')
+    ]
+    db.executemany("INSERT INTO Users VALUES (?,?,?)", users)
+
+    ath, ev, res = fake_info.sample(120)
     db.executemany("INSERT INTO Athletes VALUES (?,?,?,?,?)", ath)
     db.executemany("INSERT INTO Events    VALUES (?,?,?,?)", ev)
     db.executemany(
@@ -91,14 +102,21 @@ def admin_required(f):
 @app.route('/login', methods=['GET','POST'])
 def login():
     if request.method=='POST':
-        u,p = request.form['username'], request.form['password']
-        user = USERS.get(u)
-        if user and user['password']==p:
-            session['username'],session['role']=u,user['role']
-            flash(f"Welcome, {u}","success")
+        username = request.form['username'].strip()
+        password = request.form['password']
+        db = get_db()
+        user = db.execute(
+            "SELECT * FROM Users WHERE username=?",
+            (username,)
+        ).fetchone()
+        if user and check_password_hash(user['password'], password):
+            session['username'] = user['username']
+            session['role']     = user['role']
+            flash(f"Welcome, {username}","success")
             return redirect(url_for('index'))
         flash("Bad credentials","error")
     return render_template('login.html')
+
 
 @app.route('/logout')
 def logout():
