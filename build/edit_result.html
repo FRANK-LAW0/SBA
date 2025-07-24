@@ -1,29 +1,55 @@
 <!DOCTYPE html>
-<html><head>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
   <title>Edit Result</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head><body>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
   {% include 'base_nav.html' %}
-  <main>
-    <h1>Edit Result #{{ row['result_id'] }}</h1>
-    {% with msgs = get_flashed_messages(with_categories=true) %}
-      {% if msgs %}
-        <ul class="flash">
-        {% for cat,msg in msgs %}
-          <li class="{{cat}}">{{msg}}</li>
-        {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-    <form method="post">
-      <label>Athlete ID:</label>
-      <input type="text" name="athlete_id" value="{{ row['athlete_id'] }}" required>
-      <label>Event ID:</label>
-      <input type="text" name="event_id" value="{{ row['event_id'] }}" required>
-      <label>Result:</label>
-      <input type="text" name="result" value="{{ row['result'] }}" required>
-      <button type="submit">Update</button>
-    </form>
+  
+  <main class="container">
+    <div class="form-card">
+      <div class="form-header">
+        <h1><i class="fas fa-edit"></i> Edit Result</h1>
+        <p>Editing result for {{ row.athlete_name }} in {{ row.event_name }}</p>
+      </div>
+      
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category }}">
+                <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      
+      <form method="post" class="modern-form">
+        <input type="hidden" name="athlete_id" value="{{ row.athlete_id }}">
+        <input type="hidden" name="event_id" value="{{ row.event_id }}">
+        
+        <div class="form-group">
+          <label for="result"><i class="fas fa-stopwatch"></i> Result</label>
+          <input type="text" step="0.01" name="result" id="result" 
+                 class="modern-input" value="{{ "%.2f"|format(row.result) }}" required>
+        </div>
+        
+        <div class="form-actions">
+          <button type="submit" class="submit-btn">
+            <i class="fas fa-save"></i> Update Result
+          </button>
+          <a href="{{ url_for('list_results') }}" class="cancel-btn">
+            <i class="fas fa-times"></i> Cancel
+          </a>
+        </div>
+      </form>
+    </div>
   </main>
-</body></html>
+</body>
+</html>
