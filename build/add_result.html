@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
@@ -7,8 +8,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
+
 <body>
   {% include 'base_nav.html' %}
+
   <main class="form-container">
     <div class="form-card">
       <div class="form-header">
@@ -17,16 +20,16 @@
       </div>
 
       {% with msgs = get_flashed_messages(with_categories=true) %}
-        {% if msgs %}
-          <div class="flash-messages">
-            {% for cat, msg in msgs %}
-              <div class="flash flash-{{ cat }}">
-                <i class="fas fa-{% if cat == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
-                {{ msg }}
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
+      {% if msgs %}
+      <div class="flash-messages">
+        {% for cat, msg in msgs %}
+        <div class="flash flash-{{ cat }}">
+          <i class="fas fa-{% if cat == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+          {{ msg }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
       {% endwith %}
 
       <form method="post" class="modern-form">
@@ -35,9 +38,7 @@
             <i class="fas fa-user"></i> Athlete ID
           </label>
           <div class="input-with-icon">
-            <input type="text" id="athlete_id" name="athlete_id" required 
-                   placeholder="e.g. ATH001" class="modern-input">
-            
+            <input type="text" id="athlete_id" name="athlete_id" required placeholder="e.g. ATH001" class="modern-input">
           </div>
           <small class="input-hint">Find athlete by name or ID</small>
         </div>
@@ -47,9 +48,7 @@
             <i class="fas fa-calendar-alt"></i> Event
           </label>
           <div class="input-with-icon">
-            <input type="text" id="event_id" name="event_id" required 
-                   placeholder="e.g. EV0001" class="modern-input">
-          
+            <input type="text" id="event_id" name="event_id" required placeholder="e.g. EV0001" class="modern-input">
           </div>
           <small class="input-hint">Select from available events</small>
         </div>
@@ -58,9 +57,7 @@
           <label for="result">
             <i class="fas fa-stopwatch"></i> Result
           </label>
-          <input type="text" id="result" name="result" required 
-                 placeholder="e.g. 12.34 (time) or 5.67 (distance)" 
-                 class="modern-input">
+          <input type="text" id="result" name="result" required placeholder="e.g. 12.34 (time) or 5.67 (distance)" class="modern-input">
           <small class="input-hint">Enter time in seconds or distance in meters</small>
         </div>
 
@@ -76,4 +73,5 @@
     </div>
   </main>
 </body>
+
 </html>
