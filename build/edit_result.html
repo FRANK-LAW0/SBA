@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
@@ -7,39 +8,39 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
+
 <body>
   {% include 'base_nav.html' %}
-  
+
   <main class="container">
     <div class="form-card">
       <div class="form-header">
         <h1><i class="fas fa-edit"></i> Edit Result</h1>
         <p>Editing result for {{ row.athlete_name }} in {{ row.event_name }}</p>
       </div>
-      
+
       {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          <div class="flash-messages">
-            {% for category, message in messages %}
-              <div class="flash flash-{{ category }}">
-                <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
-                {{ message }}
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
+      {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">
+          <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
       {% endwith %}
-      
+
       <form method="post" class="modern-form">
         <input type="hidden" name="athlete_id" value="{{ row.athlete_id }}">
         <input type="hidden" name="event_id" value="{{ row.event_id }}">
-        
+
         <div class="form-group">
           <label for="result"><i class="fas fa-stopwatch"></i> Result</label>
-          <input type="text" step="0.01" name="result" id="result" 
-                 class="modern-input" value="{{ "%.2f"|format(row.result) }}" required>
+          <input type="text" step="0.01" name="result" id="result" class="modern-input" value="{{ "%.2f"|format(row.result) }}" required>
         </div>
-        
+
         <div class="form-actions">
           <button type="submit" class="submit-btn">
             <i class="fas fa-save"></i> Update Result
@@ -52,4 +53,5 @@
     </div>
   </main>
 </body>
+
 </html>
