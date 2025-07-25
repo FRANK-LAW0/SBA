@@ -2,72 +2,75 @@ from faker import Faker
 from random import *
 
 def fake_name(n):
-    names = []
     fake = Faker()
-    for i in range(n):
-        names.append(fake.name())
-    return names
+    return [fake.name() for _ in range(n)]
 
 def sample_athlete(n):
     names = fake_name(n)
-    houses = ['Red','Blue','Green','Yellow']
-    sexes   = ['Boys','Girls']
-    grades  = ['A','B','C']
+    houses = ['Red', 'Blue', 'Green', 'Yellow']
+    sexes = ['Boys', 'Girls']
+    grades = ['A', 'B', 'C']
     sample_athletes = []
     
     for i in range(1, n):
-        aid   = f"ATH{i:03d}"
-        name  = names[i]
-        x = randint(0, 3)
-        y = randint(0, 1)
-        z = randint(0, 2)
-        house = houses[x]
-        sex   = sexes[y]
-        grade = grades[z]
+        aid = f"ATH{i:03d}"
+        name = names[i]
+        house = houses[randint(0, 3)]
+        sex = sexes[randint(0, 1)]
+        grade = grades[randint(0, 2)]
         sample_athletes.append((aid, name, house, sex, grade))
     
     return sample_athletes
     
 def sample_event():
-    arr = ['60 meters','100 meters','200 meters','400 meters','800 meters','1500 meters','High Jump','Long Jump','Shot Put','Javelin','Softball']
-    sexes = ['Boys','Girls']
-    grades = ['A','B','C']
+    events = ['60 meters', '100 meters', '200 meters', '400 meters', 
+              '800 meters', '1500 meters', 'High Jump', 'Long Jump', 
+              'Shot Put', 'Javelin', 'Softball']
+    sexes = ['Boys', 'Girls']
+    grades = ['A', 'B', 'C']
     
-    N = {
-      ('60 meters','Boys','A'),('60 meters','Boys','B'),('60 meters','Boys','C'),
-      ('60 meters','Girls','A'),
-      ('Javelin','Boys','C'),('Javelin','Girls','B'),('Javelin','Girls','C'),
-      ('Softball','Boys','A'),('Softball','Boys','B'),('Softball','Girls','A')
+    excluded_combinations = {
+        ('60 meters', 'Boys', 'A'), ('60 meters', 'Boys', 'B'), 
+        ('60 meters', 'Boys', 'C'), ('60 meters', 'Girls', 'A'),
+        ('Javelin', 'Boys', 'C'), ('Javelin', 'Girls', 'B'), 
+        ('Javelin', 'Girls', 'C'), ('Softball', 'Boys', 'A'), 
+        ('Softball', 'Boys', 'B'), ('Softball', 'Girls', 'A')
     }
-    evs = []
+    
+    event_list = []
     idx = 1
-    for e in arr:
-      for s in sexes:
-        for g in grades:
-          if (e,s,g) not in N:
-            evs.append( (f"EV{idx:04d}", e, s, g) )
-            idx += 1
-    return evs
+    
+    for event in events:
+        for sex in sexes:
+            for grade in grades:
+                if (event, sex, grade) not in excluded_combinations:
+                    event_list.append((f"EV{idx:04d}", event, sex, grade))
+                    idx += 1
+    return event_list
     
 def sample(n):
     sample_results = []
     sample_athletes = sample_athlete(n)
     sample_events = sample_event()
     
-    for aid,_,_,asex,agrad in sample_athletes:
-        for eid,evname,esex,egrade in sample_events:
+    for aid, _, _, asex, agrad in sample_athletes:
+        count = 0
+        shuffle(sample_events)
+        
+        for eid, evname, esex, egrade in sample_events:
             if esex == asex and egrade == agrad:
-               
-                if 'relay' in evname.lower() or 'meters' in evname.lower() and int(evname.split()[0]) >= 800:
-                    val = round(uniform(200, 600), 2)  
+                if 'relay' in evname.lower() or ('meters' in evname.lower() and int(evname.split()[0]) >= 800):
+                    val = round(uniform(200, 600), 2)
                 elif 'meters' in evname.lower() or 'hurdles' in evname.lower():
-                    val = round(uniform(10, 25), 2)    
+                    val = round(uniform(10, 25), 2)
                 elif 'jump' in evname.lower() or 'put' in evname.lower() or 'javelin' in evname.lower():
                     val = round(uniform(1.0, 15.0), 2)
                 else:
                     val = round(uniform(10, 100), 2)
                 
                 sample_results.append((aid, eid, val))
-                break
+                count += 1
+                if count == 3:
+                    break
     
-    return sample_athletes, sample_events, sample_results
+    return sample_athletes, sorted(sample_events, key=lambda x: int(x[0][2:6])), sample_results
