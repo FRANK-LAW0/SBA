@@ -55,7 +55,7 @@
         </div>
       </form>
     </div>
-    <!-- Results Section --> {% if grouped_results %} {% for group in grouped_results %} {% set key = group[0] %} {% set results = group[1] %} {% set event_id, event_name, category = key %} <div class="results-card">
+    {% if grouped_results %} {% for group in grouped_results %} {% set key = group[0] %} {% set results = group[1] %} {% set event_id, event_name, category = key %} <div class="results-card">
       <div class="results-header">
         <h2>{{ event_name }}</h2>
         <span class="event-category">{{ category }}</span>
