@@ -19,6 +19,18 @@
       <form method="get" class="filter-form">
         <div class="filter-row">
           <div class="filter-group">
+            <label for="event_name">Event Name</label>
+            <select name="event_name" id="event_name" class="filter-select">
+              <option value="">All Events</option>
+              {% for e in distinct_events %}
+              <option value="{{ e['event'] }}" {% if current_filters.event_name == e['event'] %}selected{% endif %}>
+                {{ e['event'] }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group">
             <label for="sex">Gender</label>
             <select name="sex" id="sex" class="filter-select">
               <option value="">All Genders</option>
