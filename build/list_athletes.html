@@ -19,6 +19,12 @@
       <form method="get" class="filter-form">
         <div class="filter-row">
           <div class="filter-group">
+            <label for="athlete_id">Athlete ID</label>
+            <input type="text" name="athlete_id" id="athlete_id" class="filter-input" 
+                   placeholder="Enter ID" value="{{ current_filters.athlete_id or '' }}">
+          </div>
+
+          <div class="filter-group">
             <label for="house">House</label>
             <select name="house" id="house" class="filter-select">
               <option value="">All Houses</option>
