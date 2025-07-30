@@ -1,19 +1,15 @@
-from flask import (
-    Flask, render_template, request, redirect,
-    url_for, flash, session, g
-)
+from flask import Flask, render_template, request, redirect, url_for, flash, session, g
 import sqlite3
 import os
 import functools
 import fake_info
 from werkzeug.security import generate_password_hash, check_password_hash
 
-app = Flask(__name__,
-            template_folder='build',
-            static_folder='build/static')
+app = Flask(__name__, template_folder='build', static_folder='build/static')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev')
 app.config['DATABASE'] = os.path.join(app.root_path, 'sports_day.db')
 
+# connect database
 def get_db():
     if 'db' not in g:
         g.db = sqlite3.connect(app.config['DATABASE'])
@@ -21,12 +17,14 @@ def get_db():
         g.db.execute("PRAGMA foreign_keys = ON")
     return g.db
 
+# disconnect database
 @app.teardown_appcontext
 def close_db(exc):
     db = g.pop('db', None)
     if db:
         db.close()
 
+# create tables & insert data
 def init_db():
     db = get_db()
     db.executescript("""
@@ -64,6 +62,8 @@ def init_db():
         );
     """)
     
+    # sample username & password
+    # hash the password
     users = [
         ('admin', generate_password_hash('adminpass'), 'admin'),
         ('user', generate_password_hash('userpass'), 'user')
@@ -83,6 +83,7 @@ if not os.path.exists(app.config['DATABASE']):
     with app.app_context():
         init_db()
 
+# authentication decorators
 def login_required(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
@@ -91,6 +92,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return wrapper
 
+# create admin role
 def admin_required(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
@@ -100,6 +102,8 @@ def admin_required(f):
         return f(*args, **kwargs)
     return wrapper
 
+# login route
+# check whether username matches password & show the role
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -116,20 +120,24 @@ def login():
             session['role'] = user['role']
             flash(f"Welcome, {username}", "success")
             return redirect(url_for('index'))
-        flash("Bad credentials", "error")
+        flash("Incorrect username or password", "error")
     return render_template('login.html')
 
+# just logout
 @app.route('/logout')
 def logout():
     session.clear()
     flash("Logged out", "info")
     return redirect(url_for('login'))
 
+# home route
+# show the home page
 @app.route('/')
 @login_required
 def index():
     return render_template('index.html')
 
+# add results to the database 
 @app.route('/add', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -139,19 +147,26 @@ def add_result():
         ath_id = request.form['athlete_id'].strip()
         ev_id = request.form['event_id'].strip()
         
+        # check whether the input of result is a real number
         try:
             result = float(request.form['result'])
         except ValueError:
             flash("Result must be a number", "error")
             return redirect(url_for('add_result'))
-
+        
+        if result <= 0:
+            flash("Result must be a number larger than 0", "error")
+            return redirect(url_for('add_result'))
+        
         athlete = db.execute(
             "SELECT * FROM Athletes WHERE athlete_id=?", (ath_id,)
         ).fetchone()
         event = db.execute(
             "SELECT * FROM Events WHERE event_id=?", (ev_id,)
         ).fetchone()
-
+        
+        # check whether the athlete_id and event_id are found
+        # also check whether the sex and grade of the athlete match the event's
         if not athlete:
             flash("Athlete ID not found", "error")
         elif not event:
@@ -169,16 +184,165 @@ def add_result():
 
     return render_template('add_result.html')
 
+# edit result in results
+@app.route('/results/edit/<int:rid>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_result(rid):
+    # ensure the result is found
+    db = get_db()
+    row = db.execute("""
+        SELECT r.*, a.name as athlete_name, e.event as event_name
+        FROM results r
+        JOIN Athletes a ON a.athlete_id = r.athlete_id
+        JOIN Events e ON e.event_id = r.event_id
+        WHERE r.result_id=?
+    """, (rid,)).fetchone()
+    
+    if not row:
+        flash("Result not found", "error")
+        return redirect(url_for('list_results'))
+        
+    if request.method == 'POST':
+        # ensure the new result is a real number 
+        try:
+            result = float(request.form['result'])
+
+            if result <= 0:
+                flash("Result must be a number larger than 0", "error")
+                return render_template('edit_result.html', row=row)
+        
+            # update the result
+            db.execute(
+                "UPDATE results SET result=? WHERE result_id=?",
+                (result, rid)
+            )
+            db.commit()
+            flash("Result updated successfully", "success")
+            return redirect(url_for('list_results'))
+        except ValueError:
+            flash("Result must be a valid number", "error")
+    
+    return render_template('edit_result.html', row=row)
+
+# delete result in results
+@app.route('/results/delete/<int:rid>', methods=['POST'])
+@login_required
+@admin_required
+def delete_result(rid):
+    db = get_db()
+    # ensure the result exist
+    try:
+        db.execute("DELETE FROM results WHERE result_id=?", (rid,))
+        db.commit()
+        flash("Result deleted successfully", "success")
+    except Exception as e:
+        db.rollback()
+        flash(f"Error deleting result: {str(e)}", "error")
+    return redirect(url_for('list_results'))
+
+# show athletes table
+@app.route('/athletes')
+@login_required
+@admin_required
+def list_athletes():
+    # filter function
+    athlete_id = request.args.get('athlete_id', '').strip()
+    house = request.args.get('house', '')
+    sex = request.args.get('sex', '')
+    grade = request.args.get('grade', '')
+    
+    query = "SELECT * FROM Athletes"
+    where_filters = []
+    params = []
+    
+    if athlete_id:
+        where_filters.append("athlete_id=?")
+        params.append(athlete_id)
+    if house:
+        where_filters.append("house=?")
+        params.append(house)
+    if sex:
+        where_filters.append("sex=?")
+        params.append(sex)
+    if grade:
+        where_filters.append("grade=?")
+        params.append(grade)
+    
+    # add condition in the filter function to the sql
+    if where_filters:
+        query += " WHERE " + " AND ".join(where_filters)
+    
+    # create dropdown list for filtering
+    db = get_db()
+    athletes = db.execute(query, params).fetchall()
+    houses = db.execute("SELECT DISTINCT house FROM Athletes").fetchall()
+    grades = db.execute("SELECT DISTINCT grade FROM Athletes ORDER BY grade").fetchall()
+    
+    return render_template('list_athletes.html',
+            athletes=athletes,
+            houses=houses,
+            sexes=['Boys', 'Girls'],
+            grades=grades,
+            current_filters={'athlete_id': athlete_id, 'house': house, 'sex': sex, 'grade': grade}
+    )
+
+# show events table
+@app.route('/events')
+@login_required
+@admin_required
+def list_events():
+    # filter function
+    event_name = request.args.get('event_name', '').strip()
+    sex = request.args.get('sex', '')
+    grade = request.args.get('grade', '')
+    
+    query = "SELECT * FROM Events"
+    where_filters = []
+    params = []
+    
+    if event_name:
+        where_filters.append("event LIKE ?")
+        params.append(f"%{event_name}%")
+    if sex:
+        where_filters.append("sex=?")
+        params.append(sex)
+    if grade:
+        where_filters.append("grade=?")
+        params.append(grade)
+    
+    # add condition in the filter function to the sql
+    if where_filters:
+        query += " WHERE " + " AND ".join(where_filters)
+    
+    query += " ORDER BY event_id"
+
+    # create dropdown list for filtering
+    db = get_db()
+    events = db.execute(query, params).fetchall()
+    distinct_events = db.execute("SELECT DISTINCT event FROM Events ORDER BY event_id").fetchall()
+    
+    return render_template('list_events.html',
+            events=events,
+            distinct_events=distinct_events,
+            sexes=['Boys', 'Girls'],
+            grades=['A', 'B', 'C'],
+            current_filters={'event_name': event_name, 'sex': sex, 'grade': grade}
+    )
+
+# show the results table
 @app.route('/results')
 @login_required
 def list_results():
     db = get_db()
     
+    #filter function
     event_filter = request.args.get('event', '').strip()
     athlete_id = request.args.get('athlete', '').strip()
     sex_filter = request.args.get('sex', '')
     grade_filter = request.args.get('grade', '')
-
+    
+    # sql for showing all data
     sql = """
         SELECT 
             r.result_id,
@@ -199,6 +363,7 @@ def list_results():
     """
     params = []
     
+    # add the condition in the filer function to the sql 
     if event_filter:
         sql += " AND e.event = ?"
         params.append(event_filter)
@@ -210,14 +375,15 @@ def list_results():
         params.append(grade_filter)
     
     all_rows = db.execute(sql, tuple(params)).fetchall()
-
+    
+    # group data by event
     grouped = {}
     for row in all_rows:
         key = (row['event_id'], row['event'], f"{row['event_sex']} {row['event_grade']}")
         if key not in grouped:
             grouped[key] = []
         
-        is_time_based = 'meters' in row['event'].lower() or 'run' in row['event'].lower()
+        is_time_based = 'meters' in row['event'].lower()
         
         grouped[key].append({
             'result_id': row['result_id'],
@@ -228,12 +394,13 @@ def list_results():
             'is_time_based': is_time_based
         })
 
+    # sort results in each event
     ranked_groups = {}
     for key, results in grouped.items():
         sorted_results = sorted(
             results,
             key=lambda x: x['result'],
-            reverse=not results[0]['is_time_based']  # Reverse sort for non-time events
+            reverse=not results[0]['is_time_based']  # reverse sort for non-time events
         )
         
         ranked_results = []
@@ -247,7 +414,8 @@ def list_results():
             ranked_results.append(result)
         
         ranked_groups[key] = ranked_results
-
+    
+    # filter by athlete_id
     if athlete_id:
         filtered_groups = {}
         for key, results in ranked_groups.items():
@@ -255,7 +423,8 @@ def list_results():
             if filtered_results:
                 filtered_groups[key] = filtered_results
         ranked_groups = filtered_groups
-
+    
+    # create dropdown list for filtering
     sorted_groups = sorted(ranked_groups.items(), key=lambda x: x[0][0])
     
     events = db.execute(
@@ -277,121 +446,6 @@ def list_results():
                              'grade': grade_filter
                          })
 
-@app.route('/results/edit/<int:rid>', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def edit_result(rid):
-    db = get_db()
-    row = db.execute("""
-        SELECT r.*, a.name as athlete_name, e.event as event_name
-        FROM results r
-        JOIN Athletes a ON a.athlete_id = r.athlete_id
-        JOIN Events e ON e.event_id = r.event_id
-        WHERE r.result_id=?
-    """, (rid,)).fetchone()
-    
-    if not row:
-        flash("Result not found", "error")
-        return redirect(url_for('list_results'))
-        
-    if request.method == 'POST':
-        try:
-            result = float(request.form['result'])
-            db.execute(
-                "UPDATE results SET result=? WHERE result_id=?",
-                (result, rid)
-            )
-            db.commit()
-            flash("Result updated successfully", "success")
-            return redirect(url_for('list_results'))
-        except ValueError:
-            flash("Result must be a valid number", "error")
-    
-    return render_template('edit_result.html', row=row)
-
-@app.route('/results/delete/<int:rid>', methods=['POST'])
-@login_required
-@admin_required
-def delete_result(rid):
-    db = get_db()
-    try:
-        db.execute("DELETE FROM results WHERE result_id=?", (rid,))
-        db.commit()
-        flash("Result deleted successfully", "success")
-    except Exception as e:
-        db.rollback()
-        flash(f"Error deleting result: {str(e)}", "error")
-    return redirect(url_for('list_results'))
-
-@app.route('/athletes')
-@login_required
-@admin_required
-def list_athletes():
-    house = request.args.get('house', '')
-    sex = request.args.get('sex', '')
-    grade = request.args.get('grade', '')
-    
-    query = "SELECT * FROM Athletes"
-    where_filters = []
-    params = []
-    
-    if house:
-        where_filters.append("house=?")
-        params.append(house)
-    if sex:
-        where_filters.append("sex=?")
-        params.append(sex)
-    if grade:
-        where_filters.append("grade=?")
-        params.append(grade)
-    
-    if where_filters:
-        query += " WHERE " + " AND ".join(where_filters)
-    
-    db = get_db()
-    athletes = db.execute(query, params).fetchall()
-    houses = db.execute("SELECT DISTINCT house FROM Athletes").fetchall()
-    grades = db.execute("SELECT DISTINCT grade FROM Athletes ORDER BY grade").fetchall()
-    
-    return render_template('list_athletes.html',
-            athletes=athletes,
-            houses=houses,
-            sexes=['Boys', 'Girls'],
-            grades=grades,
-            current_filters={'house': house, 'sex': sex, 'grade': grade}
-    )
-
-@app.route('/events')
-@login_required
-@admin_required
-def list_events():
-    sex = request.args.get('sex', '')
-    grade = request.args.get('grade', '')
-    
-    query = "SELECT * FROM Events"
-    where_filters = []
-    params = []
-    
-    if sex:
-        where_filters.append("sex=?")
-        params.append(sex)
-    if grade:
-        where_filters.append("grade=?")
-        params.append(grade)
-    
-    if where_filters:
-        query += " WHERE " + " AND ".join(where_filters)
-    
-    db = get_db()
-    events = db.execute(query, params).fetchall()
-    
-    return render_template('list_events.html',
-            events=events,
-            sexes=['Boys', 'Girls'],
-            grades=['A', 'B', 'C'],
-            current_filters={'sex': sex, 'grade': grade}
-    )
-
-
+# execution
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
