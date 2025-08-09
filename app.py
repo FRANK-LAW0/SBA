@@ -4,10 +4,21 @@ import os
 import functools
 import fake_info
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_talisman import Talisman
 
 app = Flask(__name__, template_folder='build', static_folder='build/static')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev')
 app.config['DATABASE'] = os.path.join(app.root_path, 'sports_day.db')
+
+Talisman(
+    app,
+    content_security_policy=None,
+    force_https=True,
+    strict_transport_security=True,
+    frame_options='DENY',
+    x_content_type_options=True,
+    x_xss_protection=True
+)
 
 # connect database
 def get_db():
