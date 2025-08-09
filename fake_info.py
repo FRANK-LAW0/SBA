@@ -14,7 +14,7 @@ def sample_athlete(n):
     grades = ['A', 'B', 'C']
     sample_athletes = []
     
-    for i in range(1, n):
+    for i in range(1, n+1):
         aid = f"ATH{i:03d}"
         name = names[i]
         house = houses[randint(0, 3)]
