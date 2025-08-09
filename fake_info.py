@@ -47,6 +47,7 @@ def sample_event():
                 if (event, sex, grade) not in excluded_combinations:
                     event_list.append((f"EV{idx:04d}", event, sex, grade))
                     idx += 1
+    
     return event_list
   
 # generate and return all sample data  
