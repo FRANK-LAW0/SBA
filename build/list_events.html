@@ -91,6 +91,9 @@
               <th>Gender</th>
               <th>Grade</th>
               <th>Status</th>
+              {% if session.role == 'admin' %}
+                <th>Actions</th>
+              {% endif %}
             </tr>
           </thead>
 
@@ -102,7 +105,7 @@
               <td>{{ e['sex'] }}</td>
               <td>{{ e['grade'] }}</td>
               <td>
-                {% set st = (e.status or 'Unknown') %}
+                {% set st = e.status %}
                 {% if st == 'Completed' %}
                   <span class="status-badge status-completed">Completed</span>
                 {% elif st == 'Not yet started' %}
@@ -111,6 +114,13 @@
                   <span class="status-badge status-unknown">{{ st }}</span>
                 {% endif %}
               </td>
+              {% if session.role == 'admin' %}
+              <td> 
+                <a href="{{ url_for('edit_event', event_id=e['event_id']) }}" class="action-btn edit-btn">
+                  <i class="fas fa-edit"></i> <span>Edit</span>
+                </a>
+              </td>
+              {% endif %}
             </tr>
             {% endfor %}
           </tbody>
