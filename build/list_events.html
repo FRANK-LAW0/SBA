@@ -14,6 +14,7 @@
   <main class="container">
     <h1>Events</h1>
 
+    <!-- Filter section -->
     <div class="filter-container">
       <h2>Filter Events</h2>
       <form method="get" class="filter-form">
@@ -53,12 +54,25 @@
               {% endfor %}
             </select>
           </div>
-        </div>
 
-        <div class="filter-actions">
+          <div class="filter-group">
+            <label for="status">Status</label>
+            <select name="status" id="status" class="filter-select">
+              <option value="">All Statuses</option>
+              {% for s in statuses %}
+              <option value="{{ s }}" {% if current_filters.status == s %}selected{% endif %}>
+                {{ s }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div> <!-- .filter-row -->
+
+        <div class="filter-actions filter-actions--stacked">
           <button type="submit" class="filter-btn apply-btn">
             <i class="fas fa-filter"></i> Apply Filters
           </button>
+
           <a href="{{ url_for('list_events') }}" class="filter-btn reset-btn">
             <i class="fas fa-redo"></i> Reset
           </a>
@@ -66,6 +80,7 @@
       </form>
     </div>
 
+    <!-- Display events table -->
     <div class="table-card">
       <div class="table-responsive">
         <table class="data-table">
@@ -75,8 +90,10 @@
               <th>Event Name</th>
               <th>Gender</th>
               <th>Grade</th>
+              <th>Status</th>
             </tr>
           </thead>
+
           <tbody>
             {% for e in events %}
             <tr>
@@ -84,6 +101,16 @@
               <td>{{ e['event'] }}</td>
               <td>{{ e['sex'] }}</td>
               <td>{{ e['grade'] }}</td>
+              <td>
+                {% set st = (e.status or 'Unknown') %}
+                {% if st == 'Completed' %}
+                  <span class="status-badge status-completed">Completed</span>
+                {% elif st == 'Not yet started' %}
+                  <span class="status-badge status-notyet">Not yet started</span>
+                {% else %}
+                  <span class="status-badge status-unknown">{{ st }}</span>
+                {% endif %}
+              </td>
             </tr>
             {% endfor %}
           </tbody>
