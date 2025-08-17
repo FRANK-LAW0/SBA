@@ -46,8 +46,7 @@
           <select id="status" name="status" class="modern-input" required>
             <option value="" {% if row.status is none or row.status == '' %}selected{% endif %}>-- Select status --</option>
             <option value="Completed" {% if row.status == 'Completed' %}selected{% endif %}>Completed</option>
-            <option value="Not yet started" {% if row.status == 'Not yet started' %}selected{% endif %}>Not yet started</option>
-            <option value="Disqualification" {% if row.status == 'Disqualification' %}selected{% endif %}>Disqualification</option>
+            <option value="Disqualified" {% if row.status == 'Disqualified' %}selected{% endif %}>Disqualified</option>
           </select>
           <small class="input-hint">Update the result status as needed</small>
         </div>
