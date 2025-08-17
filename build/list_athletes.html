@@ -20,7 +20,7 @@
         <div class="filter-row">
           <div class="filter-group">
             <label for="athlete_id">Athlete ID</label>
-            <input type="text" name="athlete_id" id="athlete_id" class="filter-input" 
+            <input type="text" name="athlete_id" id="athlete_id" class="filter-input"
                    placeholder="Enter ID" value="{{ current_filters.athlete_id or '' }}">
           </div>
 
@@ -29,8 +29,8 @@
             <select name="house" id="house" class="filter-select">
               <option value="">All Houses</option>
               {% for h in houses %}
-              <option value="{{ h['house'] }}" {% if current_filters.house == h['house'] %}selected{% endif %}>
-                {{ h['house'] }}
+              <option value="{{ h }}" {% if current_filters.house == h %}selected{% endif %}>
+                {{ h }}
               </option>
               {% endfor %}
             </select>
@@ -53,18 +53,19 @@
             <select name="grade" id="grade" class="filter-select">
               <option value="">All Grades</option>
               {% for g in grades %}
-              <option value="{{ g['grade'] }}" {% if current_filters.grade == g['grade'] %}selected{% endif %}>
-                {{ g['grade'] }}
+              <option value="{{ g }}" {% if current_filters.grade == g %}selected{% endif %}>
+                {{ g }}
               </option>
               {% endfor %}
             </select>
           </div>
-        </div>
+        </div> 
 
-        <div class="filter-actions">
+        <div class="filter-actions filter-actions--stacked">
           <button type="submit" class="filter-btn apply-btn">
             <i class="fas fa-filter"></i> Apply Filters
           </button>
+
           <a href="{{ url_for('list_athletes') }}" class="filter-btn reset-btn">
             <i class="fas fa-redo"></i> Reset
           </a>
