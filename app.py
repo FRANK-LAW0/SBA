@@ -45,7 +45,7 @@ def init_db():
             event TEXT NOT NULL,
             sex TEXT NOT NULL CHECK(sex IN('Boys','Girls')),
             grade TEXT NOT NULL CHECK(grade IN('A','B','C')),
-            status TEXT NOT NULL CHECK(status IN('Completed', 'Not yet start'))
+            status TEXT NOT NULL CHECK(status IN('Completed', 'Not yet started'))
         );
         
         CREATE TABLE Athletes (
@@ -61,7 +61,7 @@ def init_db():
             athlete_id TEXT NOT NULL REFERENCES Athletes(athlete_id),
             event_id TEXT NOT NULL REFERENCES Events(event_id),
             result REAL,
-            status TEXT NOT NULL CHECK(status IN('Completed', 'Not yet start', 'Disqualification'))
+            status TEXT NOT NULL CHECK(status IN('Completed', 'Not yet started', 'Disqualification'))
         );
     """)
     
@@ -188,7 +188,7 @@ def add_result():
         else:
             # check whether the event has started
             event_status = event['status']
-            if event_status == 'Not yet start':
+            if event_status == 'Not yet started':
                 flash("Cannot add result to an event that has not started", "error")
                 return redirect(url_for('add_result'))
             
@@ -233,7 +233,7 @@ def edit_result(rid):
             status = request.form['status']
             
             # update the result
-            if status != 'Not yet start':
+            if status != 'Not yet started':
                 db.execute(
                   "UPDATE results SET result=?, status=? WHERE result_id=?",
                   (result, status, rid)
@@ -360,7 +360,7 @@ def list_events():
             distinct_events=distinct_events,
             sexes=['Boys', 'Girls'],
             grades=['A', 'B', 'C'],
-            statuses=['Completed', 'Not yet start'],
+            statuses=['Completed', 'Not yet started'],
             current_filters={
                 'event_name': event_name, 
                 'sex': sex, 
@@ -437,7 +437,7 @@ def list_results():
             'house': row['house'],
             'result': row['result'],
             'is_time_based': is_time_based,
-            'status': row['status'] if row['event_status'] == 'Completed' else 'Not yet start',
+            'status': row['status'] if row['event_status'] == 'Completed' else 'Not yet started',
         })
 
     # sort results in each event
@@ -445,7 +445,7 @@ def list_results():
     for key, results in grouped.items():
         
         def invalid_ranking(r):
-            return (r['result'] is None) or (r['status'] in ('Disqualification', 'Not yet start'))
+            return (r['result'] is None) or (r['status'] in ('Disqualification', 'Not yet started'))
         
         is_time_based = results['result'][0]['is_time_based'] if results['result'] else False
         valid = [res for res in results['result'] if not invalid_ranking(res)]
@@ -492,7 +492,7 @@ def list_results():
             events=events,
             sexes=['Boys', 'Girls'],
             grades=['A', 'B', 'C'],
-            statuses=['Completed', 'Not yet start', 'Disqualification'],
+            statuses=['Completed', 'Not yet started', 'Disqualification'],
             current_filters={
                 'event': event_filter,
                 'athlete': athlete_id,
