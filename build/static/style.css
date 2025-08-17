@@ -206,12 +206,22 @@ header {
   margin-top: 12px;
   align-items: flex-start;
 }
+.filter-actions .filter-btn {
+  box-sizing: border-box;    
+  padding: 10px 16px;         
+  font-size: 0.95rem;          
+  line-height: 1;             
+  min-height: 44px;            
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
 .filter-actions--stacked {
   flex-direction: column;
 }
 .filter-actions--stacked .filter-btn {
   width: 100%;
-  justify-content: center;
 }
 .filter-btn {
   padding: 10px 16px;
@@ -504,7 +514,24 @@ header {
   .action-buttons {
     gap: 4px;
   }
-  
+  .filter-actions--stacked {
+    flex-direction: column;
+  }
+
+  .filter-actions--stacked .filter-btn {
+    width: 100%;
+    box-sizing: border-box;  
+    padding: 10px 12px;      
+    font-size: 0.95rem;       
+    display: inline-flex;
+    justify-content: center; 
+    gap: 8px;
+  }
+
+  .filter-actions--stacked {
+    gap: 8px;
+  }
+
   .action-btn {
     padding: 6px;
     min-width: 32px;
