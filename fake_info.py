@@ -4,7 +4,7 @@ from random import *
 # generate n random names
 def fake_name(n):
     fake = Faker()
-    return [fake.name() for _ in range(n)]
+    return ['']+[fake.name() for _ in range(n)]
 
 # generate information of n athletes
 def sample_athlete(n):
