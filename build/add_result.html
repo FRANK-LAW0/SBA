@@ -40,7 +40,7 @@
           <div class="input-with-icon">
             <input type="text" id="athlete_id" name="athlete_id" required placeholder="e.g. ATH001" class="modern-input">
           </div>
-          <small class="input-hint">Find athlete by name or ID</small>
+          <small class="input-hint">Enter athlete ID</small>
         </div>
 
         <div class="form-group">
@@ -50,7 +50,7 @@
           <div class="input-with-icon">
             <input type="text" id="event_id" name="event_id" required placeholder="e.g. EV0001" class="modern-input">
           </div>
-          <small class="input-hint">Select from available events</small>
+          <small class="input-hint">Enter from event ID</small>
         </div>
 
         <div class="form-group">
@@ -59,6 +59,19 @@
           </label>
           <input type="text" id="result" name="result" required placeholder="e.g. 12.34 (time) or 5.67 (distance)" class="modern-input">
           <small class="input-hint">Enter time in seconds or distance in meters</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="status">
+            <i class="fas fa-info-circle"></i> Status
+          </label>
+          <select id="status" name="status" class="modern-input" required>
+            <option value="">-- Select status --</option>
+            <option value="Completed">Completed</option>
+            <option value="Not yet start">Not yet start</option>
+            <option value="Disqualification">Disqualification</option>
+          </select>
+          <small class="input-hint">Select the status</small>
         </div>
 
         <div class="form-actions">
