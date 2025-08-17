@@ -40,6 +40,17 @@
           <label for="result"><i class="fas fa-stopwatch"></i> Result</label>
           <input type="text" step="0.01" name="result" id="result" class="modern-input" value="{{ "%.2f"|format(row.result) }}" required>
         </div>
+        
+        <div class="form-group">
+          <label for="status"><i class="fas fa-info-circle"></i> Status</label>
+          <select id="status" name="status" class="modern-input" required>
+            <option value="" {% if row.status is none or row.status == '' %}selected{% endif %}>-- Select status --</option>
+            <option value="Completed" {% if row.status == 'Completed' %}selected{% endif %}>Completed</option>
+            <option value="Not yet start" {% if row.status == 'Not yet start' %}selected{% endif %}>Not yet start</option>
+            <option value="Disqualification" {% if row.status == 'Disqualification' %}selected{% endif %}>Disqualification</option>
+          </select>
+          <small class="input-hint">Update the result status as needed</small>
+        </div>
 
         <div class="form-actions">
           <button type="submit" class="submit-btn">
