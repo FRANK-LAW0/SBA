@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
-  <title>Add Result</title>
+  <title>Edit Result</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
@@ -12,20 +12,20 @@
 <body>
   {% include 'base_nav.html' %}
 
-  <main class="form-container">
+  <main class="container">
     <div class="form-card">
       <div class="form-header">
-        <h1><i class="fas fa-plus-circle"></i> Add New Result</h1>
-        <p>Enter competition results for athletes</p>
+        <h1><i class="fas fa-edit"></i> Edit Result</h1>
+        <p>Editing result for {{ row.athlete_name }} in {{ row.event_name }}</p>
       </div>
 
-      {% with msgs = get_flashed_messages(with_categories=true) %}
-      {% if msgs %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
       <div class="flash-messages">
-        {% for cat, msg in msgs %}
-        <div class="flash flash-{{ cat }}">
-          <i class="fas fa-{% if cat == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
-          {{ msg }}
+        {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">
+          <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+          {{ message }}
         </div>
         {% endfor %}
       </div>
@@ -33,50 +33,28 @@
       {% endwith %}
 
       <form method="post" class="modern-form">
-        <div class="form-group">
-          <label for="athlete_id">
-            <i class="fas fa-user"></i> Athlete ID
-          </label>
-          <div class="input-with-icon">
-            <input type="text" id="athlete_id" name="athlete_id" required placeholder="e.g. ATH001" class="modern-input">
-          </div>
-          <small class="input-hint">Enter athlete ID</small>
-        </div>
+        <input type="hidden" name="athlete_id" value="{{ row.athlete_id }}">
+        <input type="hidden" name="event_id" value="{{ row.event_id }}">
 
         <div class="form-group">
-          <label for="event_id">
-            <i class="fas fa-calendar-alt"></i> Event
-          </label>
-          <div class="input-with-icon">
-            <input type="text" id="event_id" name="event_id" required placeholder="e.g. EV0001" class="modern-input">
-          </div>
-          <small class="input-hint">Enter from event ID</small>
-        </div>
-
-        <div class="form-group">
-          <label for="result">
-            <i class="fas fa-stopwatch"></i> Result
-          </label>
-          <input type="text" id="result" name="result" required placeholder="e.g. 12.34 (time) or 5.67 (distance)" class="modern-input">
-          <small class="input-hint">Enter time in seconds or distance in meters</small>
+          <label for="result"><i class="fas fa-stopwatch"></i> Result</label>
+          <input type="text" step="0.01" name="result" id="result" class="modern-input" value="{{ "%.2f"|format(row.result) }}" required>
         </div>
         
         <div class="form-group">
-          <label for="status">
-            <i class="fas fa-info-circle"></i> Status
-          </label>
+          <label for="status"><i class="fas fa-info-circle"></i> Status</label>
           <select id="status" name="status" class="modern-input" required>
-            <option value="">-- Select status --</option>
-            <option value="Completed">Completed</option>
-            <option value="Not yet started">Not yet started</option>
-            <option value="Disqualification">Disqualification</option>
+            <option value="" {% if row.status is none or row.status == '' %}selected{% endif %}>-- Select status --</option>
+            <option value="Completed" {% if row.status == 'Completed' %}selected{% endif %}>Completed</option>
+            <option value="Not yet started" {% if row.status == 'Not yet started' %}selected{% endif %}>Not yet started</option>
+            <option value="Disqualification" {% if row.status == 'Disqualification' %}selected{% endif %}>Disqualification</option>
           </select>
-          <small class="input-hint">Select the status</small>
+          <small class="input-hint">Update the result status as needed</small>
         </div>
 
         <div class="form-actions">
           <button type="submit" class="submit-btn">
-            <i class="fas fa-save"></i> Save Result
+            <i class="fas fa-save"></i> Update Result
           </button>
           <a href="{{ url_for('list_results') }}" class="cancel-btn">
             <i class="fas fa-times"></i> Cancel
