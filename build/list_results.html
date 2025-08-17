@@ -9,27 +9,36 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
-<body> {% include 'base_nav.html' %} <main class="container">
+<body> 
+  {% include 'base_nav.html' %} 
+  <main class="container">
     <h1>Competition Results</h1>
+    
     <!-- Filter Section -->
     <div class="filter-container">
       <h2>Filter Results</h2>
       <form method="get" class="filter-form">
         <div class="filter-row">
+          
           <div class="filter-group">
             <label for="event">Event</label>
             <select name="event" id="event" class="filter-select">
-              <option value="">All Events</option> {% for e in events %} <option value="{{ e.event }}" {% if current_filters.event == e.event %}selected{% endif %}>
+              <option value="">All Events</option> 
+              {% for e in events %} 
+              <option value="{{ e.event }}" {% if current_filters.event == e.event %}selected{% endif %}>
                 {{ e.event }}
-              </option> {% endfor %}
+              </option> 
+              {% endfor %}
             </select>
           </div>
+          
           <div class="filter-group">
             <label for="athlete">Athlete ID</label>
             <input type="text" name="athlete" id="athlete" class="filter-input" value="{{ current_filters.athlete }}" placeholder="Enter ID">
           </div>
-        </div>
+        </div> 
         <div class="filter-row">
+          
           <div class="filter-group">
             <label for="sex">Gender</label>
             <select name="sex" id="sex" class="filter-select">
@@ -38,6 +47,7 @@
               </option> {% endfor %}
             </select>
           </div>
+          
           <div class="filter-group">
             <label for="grade">Grade</label>
             <select name="grade" id="grade" class="filter-select">
@@ -46,6 +56,14 @@
               </option> {% endfor %}
             </select>
           </div>
+
+          <div class="filter-group">
+            <label for="status">Status</label>
+            <select name="status" id="status" class="filter-select">
+              <option value="">All Statuses</option> {% for s in statuses %} <option value="{{ s }}" {% if current_filters.status == s %}selected{% endif %}>
+                {{ s }}
+              </option> {% endfor %}
+            </select>
         </div>
         <div class="filter-actions">
           <button type="submit" class="filter-btn apply-btn">
@@ -69,6 +87,7 @@
               <th>Name</th>
               <th>House</th>
               <th>Result</th>
+              <th>Status</th>
               {% if session.role == 'admin' %}
               <th>Actions</th>
               {% endif %}
@@ -77,11 +96,39 @@
           <tbody>
             {% for r in results %}
             <tr {% if current_filters.athlete and r.athlete_id == current_filters.athlete %}class="highlight-row" {% endif %}>
-              <td>{{ r.rank }}</td>
+              <td>
+                {% if r.rank is none %} 
+                  -
+                {% else %}
+                  {{ r.rank }}
+                {% endif %}
+              </td>
+              
               <td>{{ r.athlete_id }}</td>
               <td>{{ r.name }}</td>
               <td>{{ r.house }}</td>
-              <td>{{ "%.2f"|format(r.result) }}</td>
+
+              <td>
+                {% if r.result is none %}
+                  <span class="no-result">&mdash;</span>
+                {% else %}
+                  {{ "%.2f"|format(r.result) }}
+                {% endif %}
+              </td>
+              
+              <td>
+                {% set st = (r.status or 'Unknown') %}
+                {% if st == 'Completed' %}
+                  <span class="status-badge status-completed">Completed</span>
+                {% elif st == 'Not yet started' %}
+                  <span class="status-badge status-notyet">Not yet start</span>
+                {% elif st == 'Disqualification' %}
+                  <span class="status-badge status-disq">Disqualification</span>
+                {% else %}
+                  <span class="status-badge status-unknown">{{ st }}</span>
+                {% endif %}
+              </td>
+
               {% if session.role == 'admin' %}
               <td class="actions-cell">
                 <div class="action-buttons">
