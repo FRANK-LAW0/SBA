@@ -61,7 +61,7 @@ def init_db():
             athlete_id TEXT NOT NULL REFERENCES Athletes(athlete_id),
             event_id TEXT NOT NULL REFERENCES Events(event_id),
             result REAL,
-            status TEXT NOT NULL CHECK(status IN('Completed', 'Not yet started', 'Disqualification'))
+            status TEXT NOT NULL CHECK(status IN('Completed', 'Not yet started', 'Disqualified'))
         );
     """)
     
@@ -233,16 +233,9 @@ def edit_result(rid):
             status = request.form['status']
             
             # update the result
-            if status != 'Not yet started':
-                db.execute(
-                  "UPDATE results SET result=?, status=? WHERE result_id=?",
-                  (result, status, rid)
-                )
-            else:
-                db.execute(
-                  "UPDATE results SET result=NULL, status=? WHERE result_id=?",
-                  (status, rid)
-                )
+            db.execute(
+                "UPDATE results SET result=?, status=? WHERE result_id=?",(result, status, rid)
+            )
             db.commit()
             flash("Result updated successfully", "success")
             return redirect(url_for('list_results'))
@@ -266,6 +259,35 @@ def delete_result(rid):
         db.rollback()
         flash(f"Error deleting result: {str(e)}", "error")
     return redirect(url_for('list_results'))
+
+# edit event status
+@app.route('/events/edit/<event_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_event(event_id):
+    db = get_db()
+    event = db.execute("SELECT * FROM Events WHERE event_id=?", (event_id,)).fetchone()
+    if not event:
+        flash("Event not found", "error")
+        return redirect(url_for('list_events'))
+
+    if request.method == 'POST':
+        new_status = request.form.get('status')
+        # validate status
+        if new_status not in ('Completed', 'Not yet started'):
+            flash("Invalid status selected", "error")
+            return render_template('edit_event.html', event=event)
+        try:
+            db.execute("UPDATE Events SET status=? WHERE event_id=?", (new_status, event_id))
+            db.commit()
+            flash("Event status updated successfully", "success")
+            return redirect(url_for('list_events'))
+        except Exception as e:
+            db.rollback()
+            flash(f"Error updating event: {str(e)}", "error")
+            return render_template('edit_event.html', event=event)
+
+    return render_template('edit_event.html', event=event)
 
 # show athletes table
 @app.route('/athletes')
@@ -319,7 +341,6 @@ def list_athletes():
 # show events table
 @app.route('/events')
 @login_required
-@admin_required
 def list_events():
     # filter function
     event_name = request.args.get('event_name', '').strip()
@@ -445,7 +466,7 @@ def list_results():
     for key, results in grouped.items():
         
         def invalid_ranking(r):
-            return (r['result'] is None) or (r['status'] in ('Disqualification', 'Not yet started'))
+            return (r['result'] is None) or (r['status'] in ('Disqualified', 'Not yet started'))
         
         is_time_based = results['result'][0]['is_time_based'] if results['result'] else False
         valid = [res for res in results['result'] if not invalid_ranking(res)]
@@ -492,7 +513,7 @@ def list_results():
             events=events,
             sexes=['Boys', 'Girls'],
             grades=['A', 'B', 'C'],
-            statuses=['Completed', 'Not yet started', 'Disqualification'],
+            statuses=['Completed', 'Not yet started', 'Disqualified'],
             current_filters={
                 'event': event_filter,
                 'athlete': athlete_id,
