@@ -9,7 +9,7 @@ app = Flask(__name__, template_folder='build', static_folder='build/static')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev')
 app.config['DATABASE'] = os.path.join(app.root_path, 'sports_day.db')
 
-# connect database
+# ensure the database directory exists and connect database
 def get_db():
     if 'db' not in g:
         g.db = sqlite3.connect(app.config['DATABASE'])
@@ -26,6 +26,7 @@ def close_db(exc):
 
 # create tables & insert data
 def init_db():
+    print("initializing database...")
     db = get_db()
     db.executescript("""
         DROP TABLE IF EXISTS results;
@@ -43,7 +44,8 @@ def init_db():
             event_id TEXT PRIMARY KEY,
             event TEXT NOT NULL,
             sex TEXT NOT NULL CHECK(sex IN('Boys','Girls')),
-            grade TEXT NOT NULL CHECK(grade IN('A','B','C'))
+            grade TEXT NOT NULL CHECK(grade IN('A','B','C')),
+            status TEXT NOT NULL CHECK(status IN('Completed', 'Not yet start'))
         );
         
         CREATE TABLE Athletes (
@@ -58,7 +60,8 @@ def init_db():
             result_id INTEGER PRIMARY KEY AUTOINCREMENT,
             athlete_id TEXT NOT NULL REFERENCES Athletes(athlete_id),
             event_id TEXT NOT NULL REFERENCES Events(event_id),
-            result REAL NOT NULL
+            result REAL,
+            status TEXT NOT NULL CHECK(status IN('Completed', 'Not yet start', 'Disqualification'))
         );
     """)
     
@@ -72,11 +75,8 @@ def init_db():
 
     ath, ev, res = fake_info.sample(120)
     db.executemany("INSERT INTO Athletes VALUES (?,?,?,?,?)", ath)
-    db.executemany("INSERT INTO Events VALUES (?,?,?,?)", ev)
-    db.executemany(
-        "INSERT INTO results(athlete_id,event_id,result) VALUES (?,?,?)",
-        res
-    )
+    db.executemany("INSERT INTO Events VALUES (?,?,?,?,?)", ev)
+    db.executemany("INSERT INTO results(athlete_id,event_id,result,status) VALUES (?,?,?,?)", res)
     db.commit()
 
 if not os.path.exists(app.config['DATABASE']):
@@ -146,7 +146,7 @@ def add_result():
     if request.method == 'POST':
         ath_id = request.form['athlete_id'].strip()
         ev_id = request.form['event_id'].strip()
-        
+
         # check whether the input of result is a real number
         try:
             result = float(request.form['result'])
@@ -158,6 +158,18 @@ def add_result():
             flash("Result must be a number larger than 0", "error")
             return redirect(url_for('add_result'))
         
+        # check whether the athlete_id and event_id exist in results
+        rid = db.execute("""
+        SELECT result_id FROM results
+        WHERE athlete_id=? AND event_id=?
+        """, (ath_id, ev_id)).fetchone()
+        
+        if rid:
+            flash("Result already exists for this athlete and event", "error")
+            return redirect(url_for('add_result'))
+        
+        status = request.form['status']
+
         athlete = db.execute(
             "SELECT * FROM Athletes WHERE athlete_id=?", (ath_id,)
         ).fetchone()
@@ -174,9 +186,15 @@ def add_result():
         elif athlete['sex'] != event['sex'] or athlete['grade'] != event['grade']:
             flash("Sex/grade mismatch between athlete & event", "error")
         else:
+            # check whether the event has started
+            event_status = event['status']
+            if event_status == 'Not yet start':
+                flash("Cannot add result to an event that has not started", "error")
+                return redirect(url_for('add_result'))
+            
             db.execute(
-                "INSERT INTO results(athlete_id,event_id,result) VALUES (?,?,?)",
-                (ath_id, ev_id, result)
+                "INSERT INTO results(athlete_id,event_id,result,status) VALUES (?,?,?,?)",
+                (ath_id, ev_id, result, status)
             )
             db.commit()
             flash("Result added", "success")
@@ -211,12 +229,20 @@ def edit_result(rid):
             if result <= 0:
                 flash("Result must be a number larger than 0", "error")
                 return render_template('edit_result.html', row=row)
-        
+            
+            status = request.form['status']
+            
             # update the result
-            db.execute(
-                "UPDATE results SET result=? WHERE result_id=?",
-                (result, rid)
-            )
+            if status != 'Not yet start':
+                db.execute(
+                  "UPDATE results SET result=?, status=? WHERE result_id=?",
+                  (result, status, rid)
+                )
+            else:
+                db.execute(
+                  "UPDATE results SET result=NULL, status=? WHERE result_id=?",
+                  (status, rid)
+                )
             db.commit()
             flash("Result updated successfully", "success")
             return redirect(url_for('list_results'))
@@ -276,15 +302,18 @@ def list_athletes():
     # create dropdown list for filtering
     db = get_db()
     athletes = db.execute(query, params).fetchall()
-    houses = db.execute("SELECT DISTINCT house FROM Athletes").fetchall()
-    grades = db.execute("SELECT DISTINCT grade FROM Athletes ORDER BY grade").fetchall()
     
     return render_template('list_athletes.html',
             athletes=athletes,
-            houses=houses,
+            houses=['Red', 'Blue', 'Green', 'Yellow'],
             sexes=['Boys', 'Girls'],
-            grades=grades,
-            current_filters={'athlete_id': athlete_id, 'house': house, 'sex': sex, 'grade': grade}
+            grades=['A', 'B', 'C'],
+            current_filters={
+                'athlete_id': athlete_id, 
+                'house': house, 
+                'sex': sex, 
+                'grade': grade
+            }
     )
 
 # show events table
@@ -296,6 +325,7 @@ def list_events():
     event_name = request.args.get('event_name', '').strip()
     sex = request.args.get('sex', '')
     grade = request.args.get('grade', '')
+    status = request.args.get('status', '')
     
     query = "SELECT * FROM Events"
     where_filters = []
@@ -310,6 +340,9 @@ def list_events():
     if grade:
         where_filters.append("grade=?")
         params.append(grade)
+    if status:
+        where_filters.append("status=?")
+        params.append(status)
     
     # add condition in the filter function to the sql
     if where_filters:
@@ -321,13 +354,19 @@ def list_events():
     db = get_db()
     events = db.execute(query, params).fetchall()
     distinct_events = db.execute("SELECT DISTINCT event FROM Events ORDER BY event_id").fetchall()
-    
+
     return render_template('list_events.html',
             events=events,
             distinct_events=distinct_events,
             sexes=['Boys', 'Girls'],
             grades=['A', 'B', 'C'],
-            current_filters={'event_name': event_name, 'sex': sex, 'grade': grade}
+            statuses=['Completed', 'Not yet start'],
+            current_filters={
+                'event_name': event_name, 
+                'sex': sex, 
+                'grade': grade, 
+                'status': status
+            }
     )
 
 # show the results table
@@ -341,12 +380,14 @@ def list_results():
     athlete_id = request.args.get('athlete', '').strip()
     sex_filter = request.args.get('sex', '')
     grade_filter = request.args.get('grade', '')
+    status_filter = request.args.get('status', '')
     
     # sql for showing all data
     sql = """
         SELECT 
             r.result_id,
             r.result,
+            r.status,
             a.athlete_id, 
             a.name, 
             a.house, 
@@ -355,7 +396,8 @@ def list_results():
             e.event_id, 
             e.event, 
             e.sex AS event_sex, 
-            e.grade AS event_grade
+            e.grade AS event_grade,
+            e.status AS event_status
         FROM results r
         JOIN Athletes a ON a.athlete_id = r.athlete_id
         JOIN Events e ON e.event_id = r.event_id
@@ -373,7 +415,10 @@ def list_results():
     if grade_filter:
         sql += " AND a.grade = ?"
         params.append(grade_filter)
-    
+    if status_filter:
+        sql += " AND r.status = ?"
+        params.append(status_filter)
+
     all_rows = db.execute(sql, tuple(params)).fetchall()
     
     # group data by event
@@ -381,31 +426,45 @@ def list_results():
     for row in all_rows:
         key = (row['event_id'], row['event'], f"{row['event_sex']} {row['event_grade']}")
         if key not in grouped:
-            grouped[key] = []
+            grouped[key] = {'event_status': row['event_status'], 'result': []}
         
         is_time_based = 'meters' in row['event'].lower()
         
-        grouped[key].append({
+        grouped[key]['result'].append({
             'result_id': row['result_id'],
             'athlete_id': row['athlete_id'],
             'name': row['name'],
             'house': row['house'],
             'result': row['result'],
-            'is_time_based': is_time_based
+            'is_time_based': is_time_based,
+            'status': row['status'] if row['event_status'] == 'Completed' else 'Not yet start',
         })
 
     # sort results in each event
     ranked_groups = {}
     for key, results in grouped.items():
-        sorted_results = sorted(
-            results,
-            key=lambda x: x['result'],
-            reverse=not results[0]['is_time_based']  # reverse sort for non-time events
-        )
+        
+        def invalid_ranking(r):
+            return (r['result'] is None) or (r['status'] in ('Disqualification', 'Not yet start'))
+        
+        is_time_based = results['result'][0]['is_time_based'] if results['result'] else False
+        valid = [res for res in results['result'] if not invalid_ranking(res)]
+        invalid = [res for res in results['result'] if invalid_ranking(res)]
+        
+        if is_time_based:
+            sorted_results = sorted(valid, key=lambda r: r['result'])
+        else:
+            sorted_results = sorted(valid, key=lambda r: -r['result'])
+        
+        sorted_results.extend(invalid)
         
         ranked_results = []
         current_rank = 1
         for i, result in enumerate(sorted_results):
+            if invalid_ranking(result):
+                result['rank'] = None
+                ranked_results.append(result)
+                continue
             if i > 0 and result['result'] == sorted_results[i-1]['result']:
                 result['rank'] = current_rank
             else:
@@ -426,25 +485,22 @@ def list_results():
     
     # create dropdown list for filtering
     sorted_groups = sorted(ranked_groups.items(), key=lambda x: x[0][0])
-    
-    events = db.execute(
-        "SELECT DISTINCT event FROM Events ORDER BY event_id"
-    ).fetchall()
-    
-    sexes = ['Boys', 'Girls']
-    grades = ['A', 'B', 'C']
+    events = db.execute("SELECT DISTINCT event FROM Events ORDER BY event_id").fetchall() 
 
     return render_template('list_results.html',
-                         grouped_results=sorted_groups,
-                         events=events,
-                         sexes=sexes,
-                         grades=grades,
-                         current_filters={
-                             'event': event_filter,
-                             'athlete': athlete_id,
-                             'sex': sex_filter,
-                             'grade': grade_filter
-                         })
+            grouped_results=sorted_groups,
+            events=events,
+            sexes=['Boys', 'Girls'],
+            grades=['A', 'B', 'C'],
+            statuses=['Completed', 'Not yet start', 'Disqualification'],
+            current_filters={
+                'event': event_filter,
+                'athlete': athlete_id,
+                'sex': sex_filter,
+                'grade': grade_filter,
+                'status': status_filter
+            }
+    )
 
 # execution
 if __name__ == '__main__':
